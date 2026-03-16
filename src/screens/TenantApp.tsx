@@ -107,7 +107,7 @@ export function TenantApp({ navigation }: any) {
 
   const handleLogout = async () => { 
     await supabase.auth.signOut(); 
-    navigation.reset({ index: 0, routes: [{ name: 'RoleSelection' }] }); 
+    navigation.reset({ index: 0, routes: [{ name: 'Intro' }] });
   };
 
   const getCoverImage = (img: any) => Array.isArray(img) ? img[0] : img;

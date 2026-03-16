@@ -85,7 +85,7 @@ export function OwnerApp({ navigation }: any) {
 
   const handleLogout = async () => { 
     await supabase.auth.signOut(); 
-    navigation.reset({ index: 0, routes: [{ name: 'RoleSelection' }] }); 
+    navigation.reset({ index: 0, routes: [{ name: 'Intro' }] });
   };
 
   return (
