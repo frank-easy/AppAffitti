@@ -1,28 +1,38 @@
 import React from 'react';
-import { SafeAreaView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { SafeAreaView, Text, TouchableOpacity, View, StyleSheet, Alert } from 'react-native';
+import { supabase } from '../lib/supabase';
 import { commonStyles } from '../styles/commonStyles';
 import { COLORS } from '../utils/constants';
 
 export function RoleSelectionScreen({ navigation }: any) {
+  const selectRole = async (role: 'tenant' | 'owner') => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { Alert.alert('Errore', 'Sessione non trovata.'); return; }
+    const { error } = await supabase.from('profiles').update({ role }).eq('id', user.id);
+    if (error) { Alert.alert('Errore', error.message); return; }
+    if (role === 'owner') navigation.replace('AddApartment');
+    else navigation.replace('TenantPreferences');
+  };
+
   return (
     <SafeAreaView style={commonStyles.containerCenter}>
       <Text style={commonStyles.bigTitle}>AppAffitti</Text>
-      <View style={{height: 40}} /> 
-      
+      <View style={{height: 40}} />
+
       {/* Tenant Card - Fresh/Calm with tenantBrand */}
-      <TouchableOpacity 
-        style={[styles.roleCard, styles.tenantCard]} 
-        onPress={() => navigation.replace('Auth', { role: 'tenant' })}
+      <TouchableOpacity
+        style={[styles.roleCard, styles.tenantCard]}
+        onPress={() => selectRole('tenant')}
         activeOpacity={0.8}
       >
         <Text style={styles.roleCardTitle}>CERCO CASA</Text>
         <Text style={styles.roleCardSubtitle}>Trova la tua casa ideale</Text>
       </TouchableOpacity>
-      
+
       {/* Owner Card - Warm/Solid with ownerBrand */}
-      <TouchableOpacity 
-        style={[styles.roleCard, styles.ownerCard]} 
-        onPress={() => navigation.replace('Auth', { role: 'owner' })}
+      <TouchableOpacity
+        style={[styles.roleCard, styles.ownerCard]}
+        onPress={() => selectRole('owner')}
         activeOpacity={0.8}
       >
         <Text style={styles.roleCardTitle}>OFFRO CASA</Text>

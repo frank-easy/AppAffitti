@@ -9,15 +9,17 @@ import { TenantApp } from '../screens/TenantApp';
 import { OwnerApp } from '../screens/OwnerApp';
 import { ChatDetailScreen } from '../screens/ChatDetailScreen';
 import { LikedApartmentsScreen } from '../screens/LikedApartmentsScreen';
+import { TenantPreferencesScreen } from '../screens/TenantPreferencesScreen';
 
 export type RootStackParamList = {
   Intro: undefined;
   RoleSelection: undefined;
   Auth: { role: string };
-  ProfileSetup: { role: string };
+  ProfileSetup: undefined;
   TenantApp: undefined;
   OwnerApp: undefined;
   AddApartment: undefined;
+  TenantPreferences: undefined;
   ChatDetail: { matchId: string };
   LikedApartments: undefined;
 };
@@ -34,6 +36,7 @@ export function AppNavigator() {
       <Stack.Screen name="TenantApp" component={TenantApp} />
       <Stack.Screen name="OwnerApp" component={OwnerApp} />
       <Stack.Screen name="AddApartment" component={AddApartmentScreen} />
+      <Stack.Screen name="TenantPreferences" component={TenantPreferencesScreen} />
       <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />
       <Stack.Screen name="LikedApartments" component={LikedApartmentsScreen} />
     </Stack.Navigator>

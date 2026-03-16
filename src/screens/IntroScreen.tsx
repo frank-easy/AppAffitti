@@ -41,7 +41,6 @@ export function IntroScreen({ navigation }: any) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [role, setRole] = useState<'tenant' | 'owner'>('tenant');
   const slideAnim = useRef(new Animated.Value(1)).current;
 
   const quickLogin = async (quickRole: 'tenant' | 'owner') => {
@@ -129,9 +128,9 @@ export function IntroScreen({ navigation }: any) {
       return;
     }
     if (data.user) {
-      await supabase.from('profiles').insert([{ id: data.user.id, role, email: e }]);
+      await supabase.from('profiles').insert([{ id: data.user.id, email: e }]);
       closeAuth();
-      navigation.replace('ProfileSetup', { role });
+      navigation.replace('ProfileSetup');
     }
     setLoading(false);
   };
@@ -215,21 +214,6 @@ export function IntroScreen({ navigation }: any) {
                     showsVerticalScrollIndicator={false}
                   >
                     <Text style={styles.sheetTitle}>Accedi o Crea account</Text>
-
-                    <View style={styles.roleRow}>
-                      <TouchableOpacity
-                        style={[styles.roleBtn, role === 'tenant' && styles.roleBtnActive]}
-                        onPress={() => setRole('tenant')}
-                      >
-                        <Text style={[styles.roleBtnText, role === 'tenant' && styles.roleBtnTextActive]}>Cerco casa</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.roleBtn, role === 'owner' && styles.roleBtnActive]}
-                        onPress={() => setRole('owner')}
-                      >
-                        <Text style={[styles.roleBtnText, role === 'owner' && styles.roleBtnTextActive]}>Offro casa</Text>
-                      </TouchableOpacity>
-                    </View>
 
                     <TextInput
                       style={styles.input}
@@ -362,30 +346,6 @@ const styles = StyleSheet.create({
     color: COLORS.inkBlack,
     marginBottom: 20,
     textAlign: 'center',
-  },
-  roleRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
-  },
-  roleBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.darkTeal,
-  },
-  roleBtnActive: {
-    backgroundColor: COLORS.darkTeal,
-  },
-  roleBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.darkTeal,
-  },
-  roleBtnTextActive: {
-    color: COLORS.white,
   },
   input: {
     width: '100%',
