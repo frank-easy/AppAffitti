@@ -90,7 +90,8 @@ export function AddApartmentScreen({ navigation, route }: any) {
       
       // Carica solo le nuove immagini (quelle che non sono già URL)
       const uploadedUrls = await Promise.all(images.map(async (imgUri) => {
-         if (imgUri.startsWith('http')) return imgUri; 
+         if (imgUri.startsWith('http')) return imgUri;
+         console.log('URI prima upload:', imgUri);
          return await uploadImageToSupabase(imgUri);
       }));
 

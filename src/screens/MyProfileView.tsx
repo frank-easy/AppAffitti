@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ScrollView, Text, Image, TouchableOpacity, ActivityIndicator, View, StyleSheet, Platform, UIManager } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { ProfileDetailModal } from '../components/ProfileDetailModal';
-import { ApartmentDetailEditModal } from '../components/ApartmentDetailEditModal';
 import { COLORS } from '../utils/constants';
 
 // Abilita LayoutAnimation su Android
@@ -13,9 +12,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 export function MyProfileView({ onLogout, navigation }: any) {
   const [profile, setProfile] = useState<any>(null);
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
-  const [myApartment, setMyApartment] = useState<any>(null);
   const [showProfileDetail, setShowProfileDetail] = useState(false);
-  const [showApartmentDetail, setShowApartmentDetail] = useState(false);
   
   useEffect(() => { 
     const loadProfile = async () => {
@@ -25,20 +22,6 @@ export function MyProfileView({ onLogout, navigation }: any) {
         if (data) {
           setProfile(data);
           setAvatarImage(data.avatar_url || null);
-          
-          // Se è un proprietario, carica il suo appartamento
-          if (data.role === 'owner') {
-            const { data: apartment } = await supabase
-              .from('apartments')
-              .select('*')
-              .eq('owner_id', user.id)
-              .limit(1)
-              .single();
-            
-            if (apartment) {
-              setMyApartment(apartment);
-            }
-          }
         }
       }
     };
@@ -98,6 +81,17 @@ export function MyProfileView({ onLogout, navigation }: any) {
         </TouchableOpacity>
       </TouchableOpacity>
 
+      {/* Bubble Le tue case - Solo per Proprietari */}
+      {profile?.role === 'owner' && (
+        <TouchableOpacity
+          style={styles.caseBubble}
+          onPress={() => { if (navigation) navigation.navigate('ApartmentList'); }}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.caseBubbleText}>LE TUE CASE</Text>
+        </TouchableOpacity>
+      )}
+
       {/* Bubble Case Piaciute - Solo per Inquilini */}
       {profile?.role === 'tenant' && (
         <TouchableOpacity
@@ -110,40 +104,6 @@ export function MyProfileView({ onLogout, navigation }: any) {
           activeOpacity={0.7}
         >
           <Text style={styles.likedSubtext}>I TUOI LIKE</Text>
-        </TouchableOpacity>
-      )}
-
-      {/* Card Annuncio Preview - Solo per Proprietari */}
-      {profile?.role === 'owner' && myApartment && (
-        <TouchableOpacity 
-          style={styles.apartmentCard}
-          onPress={() => setShowApartmentDetail(true)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.apartmentCardTitle}>Il tuo Annuncio</Text>
-          <Image 
-            source={{ 
-              uri: Array.isArray(myApartment.image_url) 
-                ? myApartment.image_url[0] 
-                : myApartment.image_url || 'https://via.placeholder.com/150'
-            }} 
-            style={styles.apartmentCardMainImage}
-          />
-          <Text style={styles.apartmentCardTitleText} numberOfLines={1}>
-            {myApartment.title}
-          </Text>
-          <Text style={styles.apartmentCardPrice}>
-            €{myApartment.price}/mese
-          </Text>
-          <TouchableOpacity 
-            style={styles.viewApartmentDetailsButton}
-            onPress={(e) => {
-              e.stopPropagation();
-              setShowApartmentDetail(true);
-            }}
-          >
-            <Text style={styles.viewApartmentDetailsButtonText}>Vedi dettagli</Text>
-          </TouchableOpacity>
         </TouchableOpacity>
       )}
 
@@ -178,31 +138,6 @@ export function MyProfileView({ onLogout, navigation }: any) {
         }}
       />
 
-      {/* Apartment Detail Edit Modal */}
-      <ApartmentDetailEditModal
-        visible={showApartmentDetail}
-        apartment={myApartment}
-        onClose={() => setShowApartmentDetail(false)}
-        onApartmentUpdated={() => {
-          // Ricarica l'appartamento dopo l'aggiornamento
-          const loadApartment = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              const { data: apartment } = await supabase
-                .from('apartments')
-                .select('*')
-                .eq('owner_id', user.id)
-                .limit(1)
-                .single();
-              
-              if (apartment) {
-                setMyApartment(apartment);
-              }
-            }
-          };
-          loadApartment();
-        }}
-      />
     </ScrollView>
   );
 }
@@ -338,60 +273,6 @@ const styles = StyleSheet.create({
   logoutButtonText: {
     color: COLORS.fadedCopper,
   },
-  // Apartment Card Preview
-  apartmentCard: {
-    backgroundColor: COLORS.cardWhite,
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: COLORS.inkBlack,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  apartmentCardTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.mutedTeal,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 12,
-  },
-  apartmentCardMainImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 16,
-    backgroundColor: COLORS.inputBorder,
-    marginBottom: 15,
-    resizeMode: 'cover',
-  },
-  apartmentCardTitleText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.inkBlack,
-    marginBottom: 8,
-  },
-  apartmentCardPrice: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.darkTeal,
-    marginBottom: 15,
-  },
-  viewApartmentDetailsButton: {
-    backgroundColor: COLORS.mutedTeal,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    width: '100%',
-    alignItems: 'center',
-    opacity: 0.3,
-  },
-  viewApartmentDetailsButtonText: {
-    color: '#01161E', // Ink Black for high readability
-    fontSize: 14,
-    fontWeight: '600',
-  },
   // Liked Apartments Bubble
   likedBubble: {
     backgroundColor: COLORS.cardWhite,
@@ -411,6 +292,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: COLORS.mutedTeal,
+    letterSpacing: 0.5,
+  },
+  caseBubble: {
+    backgroundColor: COLORS.cardWhite,
+    borderRadius: 24,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: COLORS.inkBlack,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: COLORS.ownerBrand,
+  },
+  caseBubbleText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.ownerBrand,
     letterSpacing: 0.5,
   },
 });

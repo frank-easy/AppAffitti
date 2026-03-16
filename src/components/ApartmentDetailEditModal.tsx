@@ -155,7 +155,8 @@ export const ApartmentDetailEditModal = ({ visible, apartment, onClose, onApartm
       
       // Carica solo le nuove immagini (quelle che non sono già URL)
       const uploadedUrls = await Promise.all(images.map(async (imgUri) => {
-         if (imgUri.startsWith('http')) return imgUri; 
+         if (imgUri.startsWith('http')) return imgUri;
+         console.log('URI da modal:', imgUri);
          return await uploadImageToSupabase(imgUri);
       }));
 

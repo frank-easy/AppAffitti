@@ -28,3 +28,15 @@ export const COLORS = {
   mutedTeal: '#84A98C',
   fadedCopper: '#A7754D',
 };
+
+export const ONBOARDING = {
+  BG: '#0D1F1A',
+  BG_INPUT: '#152B20',
+  BG_INPUT_BORDER: '#2A4F38',
+  SPHERE_STROKE: '#4A7D5B',
+  TEXT_PRIMARY: '#F0EDE8',
+  TEXT_SECONDARY: '#6B9975',
+  TEXT_LINK: '#84A98C',
+  CTA_TENANT: '#84A98C',
+  CTA_OWNER: '#A7754D',
+};

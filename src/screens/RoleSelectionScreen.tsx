@@ -1,8 +1,7 @@
 import React from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View, StyleSheet, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
-import { commonStyles } from '../styles/commonStyles';
-import { COLORS } from '../utils/constants';
 
 export function RoleSelectionScreen({ navigation }: any) {
   const selectRole = async (role: 'tenant' | 'owner') => {
@@ -15,67 +14,74 @@ export function RoleSelectionScreen({ navigation }: any) {
   };
 
   return (
-    <SafeAreaView style={commonStyles.containerCenter}>
-      <Text style={commonStyles.bigTitle}>AppAffitti</Text>
-      <View style={{height: 40}} />
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Sei qui per...</Text>
 
-      {/* Tenant Card - Fresh/Calm with tenantBrand */}
       <TouchableOpacity
-        style={[styles.roleCard, styles.tenantCard]}
+        style={styles.tenantCard}
         onPress={() => selectRole('tenant')}
-        activeOpacity={0.8}
+        activeOpacity={0.75}
       >
-        <Text style={styles.roleCardTitle}>CERCO CASA</Text>
-        <Text style={styles.roleCardSubtitle}>Trova la tua casa ideale</Text>
+        <Ionicons name="search-outline" size={28} color="#84A98C" />
+        <Text style={styles.cardTitle}>Cerco casa</Text>
+        <Text style={styles.cardSubtitle}>Trova la tua casa ideale</Text>
       </TouchableOpacity>
 
-      {/* Owner Card - Warm/Solid with ownerBrand */}
+      <View style={{ height: 14 }} />
+
       <TouchableOpacity
-        style={[styles.roleCard, styles.ownerCard]}
+        style={styles.ownerCard}
         onPress={() => selectRole('owner')}
-        activeOpacity={0.8}
+        activeOpacity={0.75}
       >
-        <Text style={styles.roleCardTitle}>OFFRO CASA</Text>
-        <Text style={styles.roleCardSubtitle}>Pubblica il tuo annuncio</Text>
+        <Ionicons name="home-outline" size={28} color="#A7754D" />
+        <Text style={styles.cardTitle}>Offro casa</Text>
+        <Text style={styles.cardSubtitle}>Pubblica il tuo annuncio</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  roleCard: {
-    width: '100%',
-    paddingVertical: 20,
-    paddingHorizontal: 30,
-    borderRadius: 20,
-    marginBottom: 20,
+  container: {
+    flex: 1,
+    backgroundColor: '#0D1F1A',
     alignItems: 'center',
-    borderWidth: 3,
-    shadowColor: COLORS.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 8,
+  },
+  title: {
+    fontWeight: '700',
+    fontSize: 26,
+    color: '#F0EDE8',
+    marginTop: 64,
+    marginBottom: 32,
   },
   tenantCard: {
-    backgroundColor: COLORS.tenantBrand,
-    borderColor: COLORS.tenantBrand,
+    backgroundColor: '#152B20',
+    borderWidth: 1,
+    borderColor: 'rgba(132, 169, 140, 0.35)',
+    borderRadius: 20,
+    padding: 28,
+    width: '85%',
+    alignSelf: 'center',
   },
   ownerCard: {
-    backgroundColor: COLORS.ownerBrand,
-    borderColor: COLORS.ownerBrand,
+    backgroundColor: '#152B20',
+    borderWidth: 1,
+    borderColor: 'rgba(167, 117, 77, 0.35)',
+    borderRadius: 20,
+    padding: 28,
+    width: '85%',
+    alignSelf: 'center',
   },
-  roleCardTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.white,
-    letterSpacing: 1.5,
-    marginBottom: 8,
+  cardTitle: {
+    fontWeight: '600',
+    fontSize: 17,
+    color: '#F0EDE8',
+    marginTop: 12,
   },
-  roleCardSubtitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.white,
-    opacity: 0.9,
+  cardSubtitle: {
+    fontSize: 13,
+    color: '#6B9975',
+    marginTop: 4,
   },
 });

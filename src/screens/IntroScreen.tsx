@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,19 +7,19 @@ import {
   Animated,
   StyleSheet,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   TextInput,
   ActivityIndicator,
   Alert,
   TouchableWithoutFeedback,
   Keyboard,
-  ScrollView,
+  KeyboardEvent,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
-import { OrganicBlobs } from '../components/intro/OrganicBlobs';
+import { IntroShapes } from '../components/intro/IntroShapes';
 import { COLORS } from '../utils/constants';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -28,9 +28,6 @@ function toFixed4(n: number) {
   return Number(n.toFixed(4));
 }
 
-const SHEET_HEIGHT_RATIO = 0.85;
-const SHEET_HEIGHT = toFixed4(SCREEN_HEIGHT * SHEET_HEIGHT_RATIO);
-const BORDER_RADIUS_TOP = 32;
 const BUTTON_BORDER_RADIUS = 30;
 const BUTTON_PADDING_VERTICAL = 16;
 
@@ -42,6 +39,31 @@ export function IntroScreen({ navigation }: any) {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const slideAnim = useRef(new Animated.Value(1)).current;
+  const keyboardShift = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e: KeyboardEvent) => {
+        Animated.timing(keyboardShift, {
+          toValue: -e.endCoordinates.height * 0.72,
+          duration: Platform.OS === 'ios' ? e.duration : 200,
+          useNativeDriver: true,
+        }).start();
+      }
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      (e: KeyboardEvent) => {
+        Animated.timing(keyboardShift, {
+          toValue: 0,
+          duration: Platform.OS === 'ios' ? e.duration : 200,
+          useNativeDriver: true,
+        }).start();
+      }
+    );
+    return () => { showSub.remove(); hideSub.remove(); };
+  }, []);
 
   const quickLogin = async (quickRole: 'tenant' | 'owner') => {
     const email =
@@ -138,28 +160,29 @@ export function IntroScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <View style={styles.background} />
-      <OrganicBlobs />
+      <IntroShapes />
 
-      <View style={[styles.content, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
-        <View style={styles.spacer} />
-        <Text style={styles.heroText}>La tua prossima casa, a portata di match.</Text>
-        <View style={styles.spacer} />
-        <TouchableOpacity style={styles.cta} onPress={openAuth} activeOpacity={0.85}>
-          <Text style={styles.ctaText}>Iniziamo</Text>
-        </TouchableOpacity>
-      </View>
-
-      {__DEV__ && (
-        <View style={styles.devBar}>
-          <TouchableOpacity style={[styles.devBtn, { backgroundColor: '#84A98C' }]} onPress={() => quickLogin('tenant')}>
-            <Text style={styles.devBtnText}>⚡ Tenant</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.devBtn, { backgroundColor: '#A7754D' }]} onPress={() => quickLogin('owner')}>
-            <Text style={styles.devBtnText}>⚡ Owner</Text>
-          </TouchableOpacity>
+      <View style={[styles.content, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 32 }]}>
+        <Text style={styles.appName}>AppAffitti</Text>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}>
+          <Text style={styles.heroText}>La tua prossima casa, a portata di match.</Text>
         </View>
-      )}
+        <View style={{ width: '100%', gap: 12 }}>
+          <TouchableOpacity style={styles.cta} onPress={openAuth} activeOpacity={0.85}>
+            <Text style={styles.ctaText}>Iniziamo</Text>
+          </TouchableOpacity>
+          {__DEV__ && (
+            <View style={styles.devBar}>
+              <TouchableOpacity style={[styles.devBtn, { backgroundColor: '#84A98C' }]} onPress={() => quickLogin('tenant')}>
+                <Text style={styles.devBtnText}>⚡ Tenant</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.devBtn, { backgroundColor: '#A7754D' }]} onPress={() => quickLogin('owner')}>
+                <Text style={styles.devBtnText}>⚡ Owner</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
 
       <Modal
         visible={authVisible}
@@ -167,11 +190,7 @@ export function IntroScreen({ navigation }: any) {
         animationType="none"
         onRequestClose={closeAuth}
       >
-        <KeyboardAvoidingView
-          style={styles.modalWrap}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={0}
-        >
+        <View style={styles.modalWrap}>
           <View style={styles.modalInner}>
             <TouchableWithoutFeedback onPress={closeAuth}>
               <Animated.View
@@ -190,35 +209,30 @@ export function IntroScreen({ navigation }: any) {
               style={[
                 styles.sheet,
                 {
-                  height: SHEET_HEIGHT,
-                  borderTopLeftRadius: BORDER_RADIUS_TOP,
-                  borderTopRightRadius: BORDER_RADIUS_TOP,
+                  borderTopLeftRadius: 28,
+                  borderTopRightRadius: 28,
                   transform: [
                     {
                       translateY: slideAnim.interpolate({
                         inputRange: [0, 1],
-                        outputRange: [0, SHEET_HEIGHT],
+                        outputRange: [0, SCREEN_HEIGHT],
                       }),
                     },
+                    { translateY: keyboardShift },
                   ],
                 },
               ]}
             >
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.sheetTouchable}>
+                <View>
                   <View style={styles.sheetHandle} />
-                  <ScrollView
-                    style={styles.sheetScroll}
-                    contentContainerStyle={styles.sheetContent}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                  >
-                    <Text style={styles.sheetTitle}>Accedi o Crea account</Text>
+                  <View style={[styles.sheetContent, { paddingBottom: insets.bottom + 16 }]}>
+                    <Text style={styles.sheetTitle}>Accedi</Text>
 
                     <TextInput
                       style={styles.input}
                       placeholder="Email"
-                      placeholderTextColor="#9ca3af"
+                      placeholderTextColor="#5A8A6A"
                       value={email}
                       onChangeText={setEmail}
                       autoCapitalize="none"
@@ -228,7 +242,7 @@ export function IntroScreen({ navigation }: any) {
                     <TextInput
                       style={styles.input}
                       placeholder="Password"
-                      placeholderTextColor="#9ca3af"
+                      placeholderTextColor="#5A8A6A"
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry
@@ -256,12 +270,12 @@ export function IntroScreen({ navigation }: any) {
                         {isSignUp ? 'Hai già un account? Accedi' : 'Non hai un account? Crea account'}
                       </Text>
                     </TouchableOpacity>
-                  </ScrollView>
+                  </View>
                 </View>
               </TouchableWithoutFeedback>
             </Animated.View>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
     </View>
   );
@@ -270,37 +284,44 @@ export function IntroScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  background: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.inkBlack,
+    backgroundColor: '#0D1F1A',
   },
   content: {
     flex: 1,
     paddingHorizontal: 28,
     justifyContent: 'space-between',
   },
+  appName: {
+    fontFamily: 'Georgia',
+    fontSize: 22,
+    color: '#F0EDE8',
+    opacity: 0.88,
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
   spacer: {
     flex: 1,
   },
   heroText: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
-    color: COLORS.white,
+    color: '#F0EDE8',
     textAlign: 'center',
-    paddingHorizontal: 8,
+    marginBottom: 28,
   },
   cta: {
-    backgroundColor: COLORS.fadedCopper,
+    backgroundColor: '#84A98C',
     borderRadius: BUTTON_BORDER_RADIUS,
     paddingVertical: BUTTON_PADDING_VERTICAL,
+    width: '85%',
+    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
   },
   ctaText: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
   },
   modalWrap: {
     flex: 1,
@@ -318,90 +339,82 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   sheet: {
-    backgroundColor: COLORS.white,
-    overflow: 'hidden',
-  },
-  sheetTouchable: {
-    flex: 1,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#0D1F1A',
   },
   sheetHandle: {
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#d1d5db',
+    backgroundColor: '#2A4F38',
     alignSelf: 'center',
     marginTop: 12,
-  },
-  sheetScroll: {
-    flex: 1,
+    marginBottom: 20,
   },
   sheetContent: {
     paddingHorizontal: 24,
-    paddingBottom: 40,
-    paddingTop: 8,
   },
   sheetTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: COLORS.inkBlack,
+    color: '#F0EDE8',
     marginBottom: 20,
-    textAlign: 'center',
   },
   input: {
     width: '100%',
-    paddingVertical: 14,
+    height: 50,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: COLORS.inkBlack,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.darkTeal,
+    color: '#F0EDE8',
+    backgroundColor: '#152B20',
+    borderWidth: 0.8,
+    borderColor: '#2A4F38',
     borderRadius: 12,
     marginBottom: 14,
   },
   accediBtn: {
     width: '100%',
-    backgroundColor: COLORS.fadedCopper,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: '#84A98C',
+    height: 52,
+    borderRadius: 30,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 8,
   },
   accediBtnText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   switchMode: {
-    marginTop: 20,
+    marginTop: 16,
     alignItems: 'center',
   },
   switchModeText: {
     fontSize: 14,
-    color: COLORS.darkTeal,
-    fontWeight: '500',
+    color: '#84A98C',
+    textAlign: 'center',
   },
   devBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    paddingHorizontal: 0,
+    paddingVertical: 4,
+    opacity: 0.5,
   },
   devBtn: {
     flex: 1,
-    paddingVertical: 10,
+    height: 36,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   devBtnText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
 });

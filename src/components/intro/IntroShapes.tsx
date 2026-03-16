@@ -1,91 +1,45 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
-import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../../utils/constants';
-import { COLORS } from '../../utils/constants';
-import { WireframeSphere } from './WireframeSphere';
+import { SCREEN_HEIGHT } from '../../utils/constants';
 
-function toFixed4(n: number) {
-  return Number(n.toFixed(4));
-}
+const BUBBLE_COLOR = 'rgba(132, 169, 140, ';
+const BUBBLE_BORDER = 'rgba(132, 169, 140, 0.2)';
 
-const sphereWidth = toFixed4(SCREEN_WIDTH * 0.5625);
-const sphereHeight = toFixed4(SCREEN_HEIGHT * 0.2778);
-
-const sphereLeft = toFixed4(SCREEN_WIDTH * 0.6187);
-const sphereTop = toFixed4(-SCREEN_HEIGHT * 0.0847);
-
-const halfCircle1Left = toFixed4(-SCREEN_WIDTH * 0.3125);
-const halfCircle1Top = toFixed4(SCREEN_HEIGHT * 0.3889);
-const halfCircle1Size = toFixed4(SCREEN_WIDTH * 0.5208);
-
-const halfCircle2Left = toFixed4(SCREEN_WIDTH * 0.1875);
-const halfCircle2Top = toFixed4(SCREEN_HEIGHT * 0.7292);
-const halfCircle2Size = toFixed4(SCREEN_WIDTH * 0.4167);
-
-const dotCircleLeft = toFixed4(SCREEN_WIDTH * 0.0833);
-const dotCircleTop = toFixed4(SCREEN_HEIGHT * 0.1042);
-const dotCircleSize = toFixed4(SCREEN_WIDTH * 0.125);
-
-function HalfCircleSvg({
-  size,
-  stroke,
-  strokeWidth = 2,
-  rotate = 0,
-}: {
-  size: number;
-  stroke: string;
-  strokeWidth?: number;
-  rotate?: number;
-}) {
-  const r = toFixed4((size / 2) * 0.98);
-  const cx = toFixed4(size / 2);
-  const cy = toFixed4(size / 2);
-  const d = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
-  return (
-    <View style={{ width: size, height: size, transform: [{ rotate: `${rotate}deg` }] }}>
-      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <Path d={d} stroke={stroke} strokeWidth={strokeWidth} fill="none" />
-      </Svg>
-    </View>
-  );
-}
+const BUBBLES = [
+  { diameter: 180, top: -40,                   left: -50,     right: undefined, opacity: 0.12 },
+  { diameter: 120, top: SCREEN_HEIGHT * 0.15,  left: undefined, right: -30,     opacity: 0.08 },
+  { diameter: 200, top: SCREEN_HEIGHT * 0.28,  left: -80,     right: undefined, opacity: 0.06 },
+  { diameter:  90, top: SCREEN_HEIGHT * 0.5,   left: undefined, right: 20,      opacity: 0.10 },
+];
 
 export function IntroShapes() {
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <View style={[styles.sphere, { left: sphereLeft, top: sphereTop }]}>
-        <WireframeSphere width={sphereWidth} height={sphereHeight} />
-      </View>
-      <View style={[styles.shape, { left: halfCircle1Left, top: halfCircle1Top, width: halfCircle1Size, height: halfCircle1Size }]}>
-        <HalfCircleSvg size={halfCircle1Size} stroke={COLORS.mutedTeal} strokeWidth={2} rotate={-25} />
-      </View>
-      <View style={[styles.shape, { left: halfCircle2Left, top: halfCircle2Top, width: halfCircle2Size, height: halfCircle2Size }]}>
-        <HalfCircleSvg size={halfCircle2Size} stroke={COLORS.mutedTeal} strokeWidth={1.5} rotate={42} />
-      </View>
-      <View style={[styles.shape, { left: dotCircleLeft, top: dotCircleTop, width: dotCircleSize, height: dotCircleSize }]}>
-        <Svg width={dotCircleSize} height={dotCircleSize} viewBox={`0 0 ${dotCircleSize} ${dotCircleSize}`}>
-          <Circle
-            cx={dotCircleSize / 2}
-            cy={dotCircleSize / 2}
-            r={toFixed4(dotCircleSize / 2 - 2)}
-            stroke={COLORS.fadedCopper}
-            strokeWidth={1.5}
-            fill="none"
-          />
-        </Svg>
-      </View>
+      {BUBBLES.map((b, i) => (
+        <View
+          key={i}
+          style={[
+            styles.bubble,
+            {
+              width: b.diameter,
+              height: b.diameter,
+              borderRadius: b.diameter / 2,
+              top: b.top,
+              left: b.left,
+              right: b.right,
+              backgroundColor: BUBBLE_COLOR + b.opacity + ')',
+            },
+          ]}
+        />
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  sphere: {
+  bubble: {
     position: 'absolute',
-    width: sphereWidth,
-    height: sphereHeight,
-  },
-  shape: {
-    position: 'absolute',
+    borderWidth: 1,
+    borderColor: BUBBLE_BORDER,
   },
 });

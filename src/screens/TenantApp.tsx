@@ -166,7 +166,7 @@ export function TenantApp({ navigation }: any) {
                         <Text style={styles.quickInfoText}>
                           🚪 {card.num_rooms || '--'} Locali
                         </Text>
-                        {card.bathrooms && (
+                        {!!card.bathrooms && (
                           <>
                             <Text style={styles.quickInfoSeparator}> • </Text>
                             <Text style={styles.quickInfoText}>
